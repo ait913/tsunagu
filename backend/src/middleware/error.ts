@@ -31,21 +31,22 @@ export const jsonError = (
   details?: unknown,
 ) => c.json<ErrorPayload>({ error: { code, message, details } }, status);
 
-export const errorMiddleware = async (c: Context<AppBindings>, next: Next): Promise<void> => {
+export const errorMiddleware = async (
+  c: Context<AppBindings>,
+  next: Next,
+): Promise<Response | void> => {
   try {
     await next();
   } catch (error) {
     if (error instanceof AppError) {
-      c.res = jsonError(c, error.status, error.code, error.message, error.details);
-      return;
+      return jsonError(c, error.status, error.code, error.message, error.details);
     }
 
     if (error instanceof HTTPException) {
-      c.res = jsonError(c, error.status, "INTERNAL", error.message);
-      return;
+      return jsonError(c, error.status, "INTERNAL", error.message);
     }
 
     console.error(error);
-    c.res = jsonError(c, 500, "INTERNAL", "Internal server error");
+    return jsonError(c, 500, "INTERNAL", "Internal server error");
   }
 };

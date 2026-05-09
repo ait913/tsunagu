@@ -252,7 +252,7 @@ export const findNearbyUsers = async (input: {
     FROM "User" u
     WHERE u."notificationOptIn" = true
       AND u."expoPushToken" IS NOT NULL
-      AND u."currentTier" IN (${Prisma.join(input.tiers)})
+      AND u."currentTier" IN (${Prisma.join(input.tiers.map((tier) => Prisma.sql`${tier}::"Tier"`))})
       AND u."lastKnownGeom" IS NOT NULL
       AND ST_DWithin(
         u."lastKnownGeom",
