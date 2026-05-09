@@ -1,6 +1,6 @@
 import { parse } from "node:url";
-import type { Server } from "node:http";
 
+import type { ServerType } from "@hono/node-server";
 import WebSocket, { WebSocketServer } from "ws";
 
 import { prisma } from "../db/client.js";
@@ -34,7 +34,7 @@ const canAccessSession = async (userId: string, email: string, sessionId: string
   );
 };
 
-export const attachWebSocketServer = (server: Server): void => {
+export const attachWebSocketServer = (server: ServerType): void => {
   const wss = new WebSocketServer({ noServer: true });
 
   server.on("upgrade", async (request, socket, head) => {
@@ -47,6 +47,10 @@ export const attachWebSocketServer = (server: Server): void => {
       }
 
       const sessionId = match[1];
+      if (!sessionId) {
+        socket.destroy();
+        return;
+      }
       const token = typeof url.query.token === "string" ? url.query.token : "";
       const payload = await verifyAccessToken(token);
       if (!payload.sub) {

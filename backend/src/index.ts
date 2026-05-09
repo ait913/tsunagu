@@ -1,4 +1,4 @@
-import { serve } from "@hono/node-server";
+import { serve, type ServerType } from "@hono/node-server";
 import { Hono } from "hono";
 import { Prisma } from "@prisma/client";
 
@@ -103,7 +103,7 @@ const server = serve(
   },
 );
 
-attachWebSocketServer(server);
+attachWebSocketServer(server as ServerType);
 runMaintenanceJobs();
 
 export default app;

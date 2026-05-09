@@ -15,8 +15,8 @@ const envSchema = z.object({
   S3_BUCKET: z.string().min(1),
   S3_FORCE_PATH_STYLE: z
     .union([z.literal("true"), z.literal("false")])
-    .transform((value) => value === "true")
-    .default("true"),
+    .default("true")
+    .transform((value) => value === "true"),
   RESEND_API_KEY: z.string().min(1),
   MAIL_FROM: z.string().email(),
   EXPO_ACCESS_TOKEN: z.string().optional(),

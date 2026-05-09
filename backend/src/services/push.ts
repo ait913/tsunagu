@@ -8,6 +8,8 @@ export type PushTarget = {
   expoPushToken: string;
 };
 
+export type PushMessageInput = Omit<ExpoPushMessage, "to">;
+
 const expo = env.EXPO_ACCESS_TOKEN
   ? new Expo({ accessToken: env.EXPO_ACCESS_TOKEN })
   : new Expo();
@@ -77,7 +79,7 @@ const sendMessagesOnce = async (
 };
 
 export const sendPushMessages = async (
-  messages: Array<{ target: PushTarget; message: ExpoPushMessage }>,
+  messages: Array<{ target: PushTarget; message: PushMessageInput }>,
 ): Promise<void> => {
   const valid = messages.filter(({ target }) => Expo.isExpoPushToken(target.expoPushToken));
   if (valid.length === 0) {

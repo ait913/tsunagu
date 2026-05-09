@@ -1,14 +1,20 @@
 import type { Context, Next } from "hono";
 import { HTTPException } from "hono/http-exception";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import type { AppBindings, AppErrorCode, ErrorPayload } from "../types.js";
 
 export class AppError extends Error {
-  readonly status: number;
+  readonly status: ContentfulStatusCode;
   readonly code: AppErrorCode;
   readonly details?: unknown;
 
-  constructor(status: number, code: AppErrorCode, message: string, details?: unknown) {
+  constructor(
+    status: ContentfulStatusCode,
+    code: AppErrorCode,
+    message: string,
+    details?: unknown,
+  ) {
     super(message);
     this.name = "AppError";
     this.status = status;
@@ -19,7 +25,7 @@ export class AppError extends Error {
 
 export const jsonError = (
   c: Context<AppBindings>,
-  status: number,
+  status: ContentfulStatusCode,
   code: AppErrorCode,
   message: string,
   details?: unknown,

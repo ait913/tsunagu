@@ -23,6 +23,14 @@ const STATE_ORDER: Record<SessionState, number> = {
   ENDED: 5,
 };
 
+const isResponderToResponderHandoff = (kind: HandoffKind): kind is "RESPONDER_TO_RESPONDER" =>
+  kind === "RESPONDER_TO_RESPONDER";
+
+const isAedDeliveredHandoff = (kind: HandoffKind): kind is "AED_DELIVERED" =>
+  kind === "AED_DELIVERED";
+
+const isToEmsHandoff = (kind: HandoffKind): kind is "TO_EMS" => kind === "TO_EMS";
+
 const ensureActiveSession = async (sessionId: string) => {
   const session = await prisma.rescueSession.findUnique({
     where: { id: sessionId },
@@ -155,7 +163,7 @@ export const createHandoff = async (input: {
     },
   });
 
-  if (input.kind === "RESPONDER_TO_RESPONDER" && input.fromUserId) {
+  if (isResponderToResponderHandoff(input.kind) && input.fromUserId) {
     await prisma.responder.updateMany({
       where: {
         sessionId: input.sessionId,
@@ -179,21 +187,25 @@ export const createHandoff = async (input: {
     }
   }
 
-  if (input.kind === "AED_DELIVERED") {
+  if (isAedDeliveredHandoff(input.kind)) {
     await advanceSessionState(input.sessionId, "AED_ARRIVED");
   }
 
-  if (input.kind === "TO_EMS") {
+  if (isToEmsHandoff(input.kind)) {
     await advanceSessionState(input.sessionId, "HANDED_OFF");
   }
 
-  realtimeBroker.publish(input.sessionId, {
-    type: input.kind === "AED_DELIVERED" ? "aed_arrived" : "session_state",
-    data:
-      input.kind === "AED_DELIVERED"
-        ? { aed: null }
-        : { state: input.kind === "TO_EMS" ? "HANDED_OFF" : "RESPONDER_ARRIVED" },
-  });
+  if (isAedDeliveredHandoff(input.kind)) {
+    realtimeBroker.publish(input.sessionId, {
+      type: "aed_arrived",
+      data: { aed: null },
+    });
+  } else {
+    realtimeBroker.publish(input.sessionId, {
+      type: "session_state",
+      data: { state: isToEmsHandoff(input.kind) ? "HANDED_OFF" : "RESPONDER_ARRIVED" },
+    });
+  }
 
   return handoff;
 };
