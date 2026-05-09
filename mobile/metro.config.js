@@ -3,27 +3,21 @@ const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
-// React Native 0.74.x + react-native-web の web bundling で
-// ReactNativePrivateInterface.js が `../Utilities/Platform` を解決できない問題への対策。
-// Web target では Platform を react-native-web 提供のものに alias する。
-const reactNativePath = path.resolve(__dirname, "node_modules/react-native");
-const reactNativeWebPlatform = path.resolve(
-  __dirname,
-  "node_modules/react-native-web/dist/exports/Platform/index.js",
-);
+// Web target で native-only モジュールを stub に向ける
+const webStubs = {
+  "react-native-maps": path.resolve(
+    __dirname,
+    "src/web-stubs/react-native-maps.js",
+  ),
+};
 
 const originalResolveRequest = config.resolver.resolveRequest;
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (
-    platform === "web" &&
-    moduleName === "../Utilities/Platform" &&
-    context.originModulePath &&
-    context.originModulePath.includes(reactNativePath)
-  ) {
+  if (platform === "web" && webStubs[moduleName]) {
     return {
       type: "sourceFile",
-      filePath: reactNativeWebPlatform,
+      filePath: webStubs[moduleName],
     };
   }
   if (originalResolveRequest) {

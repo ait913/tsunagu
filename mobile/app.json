@@ -7,7 +7,11 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "web": {
       "favicon": "./assets/icons/favicon.png",
       "bundler": "metro"
@@ -81,7 +85,8 @@
         {
           "microphonePermission": "CPR音声ガイドと通話連携のためにマイクを利用します。"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {
