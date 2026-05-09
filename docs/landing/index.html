@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tsunagu — 「救急車を呼ぶしかできなかった人」を「助けられる人」に変える救命応援アプリ">
+  <title>Tsunagu — 命をつなぐ救命応援アプリ</title>
+  <link rel="icon" type="image/png" href="/assets/logo.png">
+  <style>
+    :root {
+      --emergency: #DC2626;
+      --info: #2563EB;
+      --success: #16A34A;
+      --bg: #0A0A0A;
+      --fg: #FAFAFA;
+      --gray: #404040;
+      --muted: #737373;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { min-height: 100vh; }
+    .container { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+
+    /* hero */
+    .hero { text-align: center; padding: 64px 0 48px; }
+    .hero img { width: 200px; height: 200px; border-radius: 24px; }
+    .hero h1 { font-size: 56px; font-weight: 700; letter-spacing: -0.02em; margin-top: 24px; }
+    .hero .copy { font-size: 24px; color: var(--muted); margin-top: 16px; }
+    .hero .copy strong { color: var(--emergency); font-weight: 600; }
+
+    /* section */
+    section { margin: 64px 0; }
+    h2 { font-size: 32px; font-weight: 700; margin-bottom: 24px; border-left: 6px solid var(--emergency); padding-left: 16px; }
+    p { font-size: 18px; margin-bottom: 12px; color: var(--fg); }
+
+    /* stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .stat { background: #1a1a1a; border-radius: 12px; padding: 20px; text-align: center; }
+    .stat .num { font-size: 40px; font-weight: 800; color: var(--emergency); }
+    .stat .label { font-size: 14px; color: var(--muted); margin-top: 4px; }
+    @media (max-width: 600px) {
+      .stats { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 40px; }
+      .hero .copy { font-size: 18px; }
+    }
+
+    /* preview cards */
+    .preview-card {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 1px solid var(--gray);
+    }
+    .preview-card h3 { font-size: 22px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .preview-card .url { background: #0a0a0a; padding: 12px; border-radius: 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; word-break: break-all; color: var(--info); margin: 12px 0; }
+    .preview-card .qr { display: flex; justify-content: center; margin: 16px 0; }
+    .preview-card .qr img { width: 220px; height: 220px; border-radius: 12px; background: white; padding: 8px; }
+    .preview-card ol { padding-left: 24px; margin-top: 12px; }
+    .preview-card li { font-size: 16px; margin: 6px 0; }
+    .badge { display: inline-block; background: var(--emergency); color: white; font-size: 12px; padding: 2px 8px; border-radius: 4px; vertical-align: middle; }
+
+    /* status */
+    .status-card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .status-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .status-dot.ok { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-dot.bad { background: var(--emergency); }
+    .status-dot.unknown { background: var(--muted); }
+    .status-label { font-family: ui-monospace, "SF Mono", monospace; font-size: 14px; }
+
+    /* features */
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .feature { background: #1a1a1a; border-radius: 12px; padding: 20px; }
+    .feature h4 { font-size: 18px; margin-bottom: 8px; color: var(--emergency); }
+    .feature p { font-size: 14px; color: var(--muted); }
+    @media (max-width: 600px) { .features { grid-template-columns: 1fr; } }
+
+    /* footer */
+    footer { padding: 32px 0 64px; text-align: center; color: var(--muted); font-size: 14px; }
+    footer a { color: var(--info); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .disclaimer {
+      margin-top: 32px;
+      padding: 16px;
+      background: #2a1a1a;
+      border-left: 4px solid var(--emergency);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <img src="/assets/logo.png" alt="Tsunagu logo">
+      <h1>Tsunagu</h1>
+      <p class="copy">「救急車を呼ぶしかできなかった人」を<br><strong>「助けられる人」</strong>に変える。</p>
+    </header>
+
+    <section>
+      <h2>解こうとしている課題</h2>
+      <p>日本で救急車が現場に到着するまで、平均10分。東京では14分。</p>
+      <p>しかしOHCA(院外心停止)の<strong>70-75%は自宅で起きる</strong>。そして<strong>AEDがその場所に届かない</strong>から、生存率は<strong>たった2.6%</strong>。</p>
+      <p>同じ心停止でも、駅やスポーツ施設なら46%。差を生むのは救急車の早さじゃなく、<strong>誰かがAEDを届け、CPRを始めること</strong>。</p>
+    </section>
+
+    <section>
+      <h2>数字で見るボトルネック</h2>
+      <div class="stats">
+        <div class="stat"><div class="num">2.6%</div><div class="label">住宅OHCAの生存率</div></div>
+        <div class="stat"><div class="num">46%</div><div class="label">スポーツ施設なら</div></div>
+        <div class="stat"><div class="num">4%</div><div class="label">AED使用率 (20年横ばい)</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tsunaguがやること</h2>
+      <div class="features">
+        <div class="feature"><h4>① AEDを届ける</h4><p>近隣の登録者に「AEDをこの住所まで運んで」プッシュ通知。半径400m→1km→5kmの段階拡大。</p></div>
+        <div class="feature"><h4>② CPR音声ガイド</h4><p>発見者の両手は胸骨圧迫に。スマホは音声でリズム(100bpm)とコツを伝え続ける。</p></div>
+        <div class="feature"><h4>③ 119を確実に押させる</h4><p>3秒スワイプで `tel:` 起動。119通報を阻害せず、コール後の数分を埋める。</p></div>
+        <div class="feature"><h4>④ 医療系学生・医療者を呼ぶ</h4><p>3層モデル(医療従事者/医療系学生/AED運搬役)で受信側プールを広く確保。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>📱 実機で見る (Expo Go)</h2>
+      <div class="preview-card">
+        <h3>iPhone / Android <span class="badge">推奨</span></h3>
+        <ol>
+          <li>App Store / Google Play で <strong>「Expo Go」</strong> をインストール</li>
+          <li>Expo Go アプリを起動 → 「Enter URL manually」</li>
+          <li>下のURL or QRコードをスキャン</li>
+        </ol>
+        <div class="url">exp://v0wmnak-anonymous-8081.exp.direct</div>
+        <div class="qr">
+          <img src="https://qrserver.com/api/qr-code/?data=exp%3A%2F%2Fv0wmnak-anonymous-8081.exp.direct&amp;size=300x300" alt="Expo Go QR">
+        </div>
+        <p style="font-size: 13px; color: var(--muted);">⚠ Tunnel URL は dev server (Macbook) が起動している間のみ有効です。切れていたら声をかけてください。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>⚙ システム稼働状況</h2>
+      <div class="status-card">
+        <div>
+          <span id="be-dot" class="status-dot unknown"></span>
+          <span class="status-label">Backend (tsunagu.appily.run)</span>
+        </div>
+        <span id="be-status" class="status-label">checking...</span>
+      </div>
+      <p style="font-size: 13px; color: var(--muted); margin-top: 8px;">backend は Coolify (Appily) で 24/7 稼働中。デモ番号: <code>09039655913</code></p>
+    </section>
+
+    <div class="disclaimer">
+      <strong>⚠ MVP 注意事項</strong><br>
+      これはPoC段階のアプリです。実際の救命要請には使えません。本物の緊急時は<strong>必ず119を呼んでください</strong>。
+      症状トリアージ・医療判断は提供しません(Q助等の公式アプリをご利用ください)。
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 Tsunagu MVP — built with Hono + Prisma + PostgreSQL+PostGIS + Expo</p>
+    <p><a href="https://github.com/ait913/tsunagu" target="_blank">GitHub: ait913/tsunagu</a></p>
+  </footer>
+
+  <script>
+    fetch('https://tsunagu.appily.run/healthz')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('be-dot').className = 'status-dot ' + (d.ok ? 'ok' : 'bad');
+        document.getElementById('be-status').textContent = d.ok ? 'OK ' + d.ts : 'NG';
+      })
+      .catch(e => {
+        document.getElementById('be-dot').className = 'status-dot bad';
+        document.getElementById('be-status').textContent = 'unreachable';
+      });
+  </script>
+</body>
+</html>
