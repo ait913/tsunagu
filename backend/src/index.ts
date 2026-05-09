@@ -1,5 +1,6 @@
 import { serve, type ServerType } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { Prisma } from "@prisma/client";
 
 import { prisma } from "./db/client.js";
@@ -23,6 +24,17 @@ import type { AppBindings } from "./types.js";
 const app = new Hono<AppBindings>();
 
 app.onError(errorHandler);
+app.use(
+  "*",
+  cors({
+    origin: (origin) => origin ?? "*",
+    allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposeHeaders: ["Content-Length"],
+    credentials: false,
+    maxAge: 86400,
+  }),
+);
 app.use("*", demoMiddleware);
 app.use("*", auditMiddleware);
 
