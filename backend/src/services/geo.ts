@@ -116,7 +116,7 @@ export const updateUserLastKnownLocation = async (
   await prisma.$executeRaw`
     UPDATE "User"
     SET "lastKnownGeom" = ${pointSql(lat, lng)}
-    WHERE "id" = ${userId}
+    WHERE "id" = ${userId}::text
   `;
 };
 
@@ -169,7 +169,7 @@ export const updateResponderGeom = async (input: {
       ${column} = ${pointSql(input.lat, input.lng)},
       "etaSec" = ${input.etaSec ?? null},
       "lastPingedAt" = NOW()
-    WHERE "id" = ${input.responderId}
+    WHERE "id" = ${input.responderId}::text
   `);
 };
 
@@ -177,7 +177,7 @@ export const clearResponderGeometries = async (sessionId: string): Promise<void>
   await prisma.$executeRaw`
     UPDATE "Responder"
     SET "currentGeom" = NULL, "notifiedGeom" = NULL
-    WHERE "sessionId" = ${sessionId}
+    WHERE "sessionId" = ${sessionId}::text
   `;
 };
 
@@ -235,7 +235,7 @@ export const findNearbyUsers = async (input: {
   const excluded = [...(input.excludeUserIds ?? []), input.finderId];
   const excludeClause =
     excluded.length > 0
-      ? Prisma.sql`AND u."id" NOT IN (${Prisma.join(excluded)})`
+      ? Prisma.sql`AND u."id" NOT IN (${Prisma.join(excluded.map((id) => Prisma.sql`${id}::text`))})`
       : Prisma.empty;
 
   const rows = await prisma.$queryRaw<NearbyUser[]>(Prisma.sql`
@@ -279,7 +279,7 @@ export const getSosRaw = async (sosId: string): Promise<RawSosRow> => {
       s."isDemo",
       s."createdAt"
     FROM "Sos" s
-    WHERE s."id" = ${sosId}
+    WHERE s."id" = ${sosId}::text
     LIMIT 1
   `);
 
@@ -306,7 +306,7 @@ export const getSessionTarget = async (sessionId: string): Promise<RawSessionTar
     FROM "RescueSession" rs
     INNER JOIN "Sos" s ON s."id" = rs."sosId"
     INNER JOIN "User" u ON u."id" = s."finderId"
-    WHERE rs."id" = ${sessionId}
+    WHERE rs."id" = ${sessionId}::text
     LIMIT 1
   `);
 
@@ -333,7 +333,7 @@ export const getResponderSummaries = async (sessionId: string): Promise<Responde
       u."displayName"
     FROM "Responder" r
     INNER JOIN "User" u ON u."id" = r."userId"
-    WHERE r."sessionId" = ${sessionId}
+    WHERE r."sessionId" = ${sessionId}::text
     ORDER BY r."notifiedAt" ASC
   `);
 
@@ -412,7 +412,7 @@ export const findAedById = async (aedId: string): Promise<AedDeviceSummary | nul
       a."installedAt",
       a."sourceLicense"
     FROM "AedDevice" a
-    WHERE a."id" = ${aedId}
+    WHERE a."id" = ${aedId}::text
     LIMIT 1
   `);
 

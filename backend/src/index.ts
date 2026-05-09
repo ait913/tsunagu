@@ -7,7 +7,7 @@ import { env } from "./env.js";
 import { auditMiddleware } from "./middleware/audit.js";
 import { requireAuth } from "./middleware/auth.js";
 import { demoMiddleware } from "./middleware/demo.js";
-import { errorMiddleware } from "./middleware/error.js";
+import { errorHandler } from "./middleware/error.js";
 import adminRoutes from "./routes/admin.js";
 import aedRoutes from "./routes/aed.js";
 import authRoutes from "./routes/auth.js";
@@ -22,7 +22,7 @@ import type { AppBindings } from "./types.js";
 
 const app = new Hono<AppBindings>();
 
-app.use("*", errorMiddleware);
+app.onError(errorHandler);
 app.use("*", demoMiddleware);
 app.use("*", auditMiddleware);
 

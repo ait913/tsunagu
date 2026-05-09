@@ -1,4 +1,4 @@
-import type { Context, Next } from "hono";
+import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -31,22 +31,15 @@ export const jsonError = (
   details?: unknown,
 ) => c.json<ErrorPayload>({ error: { code, message, details } }, status);
 
-export const errorMiddleware = async (
-  c: Context<AppBindings>,
-  next: Next,
-): Promise<Response | void> => {
-  try {
-    await next();
-  } catch (error) {
-    if (error instanceof AppError) {
-      return jsonError(c, error.status, error.code, error.message, error.details);
-    }
-
-    if (error instanceof HTTPException) {
-      return jsonError(c, error.status, "INTERNAL", error.message);
-    }
-
-    console.error(error);
-    return jsonError(c, 500, "INTERNAL", "Internal server error");
+export const errorHandler = (error: Error, c: Context<AppBindings>): Response => {
+  if (error instanceof AppError) {
+    return jsonError(c, error.status, error.code, error.message, error.details);
   }
+
+  if (error instanceof HTTPException) {
+    return jsonError(c, error.status, "INTERNAL", error.message);
+  }
+
+  console.error(error);
+  return jsonError(c, 500, "INTERNAL", "Internal server error");
 };
