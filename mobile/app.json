@@ -1,0 +1,87 @@
+{
+  "expo": {
+    "name": "Tsunagu",
+    "slug": "tsunagu",
+    "version": "0.1.0",
+    "scheme": "tsunagu",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "icon": "./assets/icons/icon.png",
+    "splash": {
+      "image": "./assets/icons/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0A"
+    },
+    "ios": {
+      "bundleIdentifier": "run.appily.tsunagu",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "現場とAEDの位置を共有し、救助者を案内するために位置情報を利用します。",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "要請中のみ位置情報を共有し、救助者とAED運搬役の到着状況を表示するために利用します。",
+        "NSMicrophoneUsageDescription": "CPR音声ガイドと通話連携のためにマイクを利用します。",
+        "NSCameraUsageDescription": "Tier登録の書類撮影のためにカメラを利用します。",
+        "UIBackgroundModes": [
+          "location",
+          "audio",
+          "fetch"
+        ]
+      }
+    },
+    "android": {
+      "package": "run.appily.tsunagu",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "RECORD_AUDIO",
+        "POST_NOTIFICATIONS",
+        "VIBRATE",
+        "INTERNET"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icons/icon.png",
+          "color": "#0A0A0A",
+          "defaultChannel": "tsunagu-response",
+          "channels": [
+            {
+              "id": "tsunagu-aed-carry",
+              "name": "Tsunagu AED Carry",
+              "importance": "MAX",
+              "sound": true
+            },
+            {
+              "id": "tsunagu-response",
+              "name": "Tsunagu Response",
+              "importance": "MAX",
+              "sound": true
+            }
+          ]
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "要請中のみ位置情報を利用し、現場・AED・救助者の到着状況を共有します。",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "CPR音声ガイドと通話連携のためにマイクを利用します。"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}
