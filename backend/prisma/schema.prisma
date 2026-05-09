@@ -1,0 +1,249 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum Tier {
+  TIER1
+  TIER2
+  TIER3
+}
+
+enum TierAppStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+}
+
+enum Symptom {
+  NO_BREATHING
+  NO_CONSCIOUSNESS
+  BLEEDING
+  OTHER
+}
+
+enum SosStatus {
+  ACTIVE
+  CANCELLED
+  ENDED
+}
+
+enum RescueRole {
+  RESPONDER
+  AED_CARRIER
+}
+
+enum ResponderStatus {
+  ASSIGNED
+  ACCEPTED
+  ENROUTE
+  ARRIVED
+  HANDED_OFF
+  CANCELLED
+}
+
+enum HandoffKind {
+  RESPONDER_TO_RESPONDER
+  AED_DELIVERED
+  TO_EMS
+}
+
+enum AuditAction {
+  USER_REGISTERED
+  USER_LOGGED_IN
+  TIER_APPLIED
+  TIER_APPROVED
+  TIER_REJECTED
+  SOS_FIRED
+  SOS_CANCELLED
+  RESPONDER_NOTIFIED
+  RESPONDER_ACCEPTED
+  RESPONDER_DECLINED
+  RESPONDER_ARRIVED
+  HANDOFF_RECORDED
+  RESCUE_ENDED
+  CONSENT_RECORDED
+}
+
+model User {
+  id                  String   @id @default(cuid())
+  email               String   @unique
+  passwordHash        String
+  displayName         String
+  phone               String?
+  currentTier         Tier?
+  notificationOptIn   Boolean  @default(true)
+  notificationRadiusM Int      @default(400)
+  expoPushToken       String?
+  agreedTermsVersion  Int?
+  finderOnlyMode      Boolean  @default(false)
+  demoEnabled         Boolean  @default(false)
+  lastKnownGeom       Unsupported("geography(Point, 4326)")?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  applications TierApplication[]
+  sosFired     Sos[]            @relation("FinderSos")
+  responses    Responder[]
+  handoffsFrom HandoffEvent[]   @relation("HandoffFrom")
+  handoffsTo   HandoffEvent[]   @relation("HandoffTo")
+  consents     ConsentLog[]
+  auditLogs    AuditLog[]
+
+  @@index([currentTier])
+  @@index([notificationOptIn])
+}
+
+model TierApplication {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestedTier Tier
+  status        TierAppStatus @default(PENDING)
+  documentKeys  String[]
+  note          String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  reviewerNote  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Sos {
+  id            String                      @id @default(cuid())
+  finderId      String
+  finder        User                        @relation("FinderSos", fields: [finderId], references: [id])
+  symptom       Symptom
+  locationLabel String?
+  geom          Unsupported("geography(Point, 4326)")
+  accuracyM     Float?
+  status        SosStatus                   @default(ACTIVE)
+  isDemo        Boolean                     @default(false)
+  createdAt     DateTime                    @default(now())
+  cancelledAt   DateTime?
+  endedAt       DateTime?
+  rescueSession RescueSession?
+
+  @@index([status])
+  @@index([finderId])
+  @@index([createdAt])
+}
+
+model RescueSession {
+  id            String        @id @default(cuid())
+  sosId         String        @unique
+  sos           Sos           @relation(fields: [sosId], references: [id], onDelete: Cascade)
+  aedDeviceId   String?
+  aedDevice     AedDevice?    @relation(fields: [aedDeviceId], references: [id])
+  dispatchRound Int           @default(0)
+  state         String        @default("PENDING")
+  isDemo        Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  endedAt       DateTime?
+  responders    Responder[]
+  handoffs      HandoffEvent[]
+
+  @@index([state])
+  @@index([sosId])
+}
+
+model Responder {
+  id           String                      @id @default(cuid())
+  sessionId    String
+  session      RescueSession               @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User                        @relation(fields: [userId], references: [id])
+  role         RescueRole
+  status       ResponderStatus             @default(ASSIGNED)
+  notifiedGeom Unsupported("geography(Point, 4326)")?
+  currentGeom  Unsupported("geography(Point, 4326)")?
+  lastPingedAt DateTime?
+  etaSec       Int?
+  notifiedAt   DateTime                    @default(now())
+  acceptedAt   DateTime?
+  arrivedAt    DateTime?
+  cancelledAt  DateTime?
+
+  @@index([sessionId, role])
+  @@index([userId])
+  @@index([status])
+  @@unique([sessionId, userId, role])
+}
+
+model AedDevice {
+  id            String                      @id @default(cuid())
+  externalId    String                      @unique
+  name          String
+  manufacturer  String?
+  model         String?
+  installedAt   String?
+  address       String?
+  hours         String?
+  indoor        Boolean?                    @default(true)
+  geom          Unsupported("geography(Point, 4326)")
+  sourceLicense String                      @default("AED N@VI / CC BY 3.0")
+  importedAt    DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+  rescues       RescueSession[]
+
+  @@index([externalId])
+}
+
+model HandoffEvent {
+  id          String        @id @default(cuid())
+  sessionId   String
+  session     RescueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  kind        HandoffKind
+  fromUserId  String?
+  toUserId    String?
+  fromUser    User?         @relation("HandoffFrom", fields: [fromUserId], references: [id])
+  toUser      User?         @relation("HandoffTo", fields: [toUserId], references: [id])
+  aedDeviceId String?
+  note        String?
+  occurredAt  DateTime      @default(now())
+
+  @@index([sessionId])
+  @@index([occurredAt])
+}
+
+model ConsentLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  layer        String
+  termsVersion Int
+  ipAddress    String?
+  userAgent    String?
+  agreedAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([termsVersion])
+}
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action       AuditAction
+  resourceId   String?
+  resourceType String?
+  payload      Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resourceId])
+}
