@@ -2,31 +2,46 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { colors } from "@/theme/colors";
+import { spacing } from "@/theme/spacing";
 import { typography } from "@/theme/typography";
+import { formatTime } from "@/utils/formatTime";
 
 export type TimerDisplayProps = {
-  value: string;
+  seconds: number | null;
+  label: string;
+  warning?: boolean;
 };
 
 export default function TimerDisplay({
-  value,
+  seconds,
+  label,
+  warning = false,
 }: TimerDisplayProps): JSX.Element {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{value}</Text>
+    <View accessibilityLiveRegion="polite" style={styles.container}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.time, warning ? styles.warning : null]}>
+        {formatTime(seconds)}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: colors.gray700,
+    alignItems: "center",
+    gap: spacing.xs,
   },
-  text: {
-    ...typography.h2,
+  label: {
+    ...typography.small,
+    color: colors.gray500,
+    textTransform: "uppercase",
+  },
+  time: {
+    ...typography.h1,
     color: colors.fgWhite,
+  },
+  warning: {
+    color: colors.warningAmber,
   },
 });

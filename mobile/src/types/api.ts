@@ -34,6 +34,7 @@ export type UserSummary = {
   email: string;
   displayName: string;
   currentTier: Tier | null;
+  notificationOptIn?: boolean;
 };
 
 export type AedDeviceSummary = {

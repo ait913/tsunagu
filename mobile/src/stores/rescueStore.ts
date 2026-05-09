@@ -10,6 +10,11 @@ import type {
 type RescueState = {
   sessionId: string | null;
   state: string;
+  dispatchRound: number;
+  isDemo: boolean;
+  startedAt: string | null;
+  locationLabel: string | null;
+  selfResponderId: string | null;
   responders: ResponderSummary[];
   aedCarrier: ResponderSummary | null;
   aedDevice: AedDeviceSummary | null;
@@ -24,6 +29,11 @@ type RescueState = {
 const initialState = {
   sessionId: null,
   state: "PENDING",
+  dispatchRound: 1,
+  isDemo: false,
+  startedAt: null as string | null,
+  locationLabel: null as string | null,
+  selfResponderId: null as string | null,
   responders: [] as ResponderSummary[],
   aedCarrier: null as ResponderSummary | null,
   aedDevice: null as AedDeviceSummary | null,
@@ -83,6 +93,10 @@ export const useRescueStore = create<RescueState>((set) => ({
     set({
       sessionId: data.session.id,
       state: data.session.state,
+      dispatchRound: data.session.dispatchRound,
+      isDemo: data.sos.isDemo,
+      startedAt: data.sos.createdAt,
+      locationLabel: data.sos.locationLabel,
       responders: sortResponders(responders),
       aedCarrier,
       aedDevice: data.session.aedDevice,
@@ -124,7 +138,7 @@ export const useRescueStore = create<RescueState>((set) => ({
           };
         }
         case "responder_accepted": {
-          const responders = state.responders.map((responder) =>
+          const responders: ResponderSummary[] = state.responders.map((responder) =>
             responder.id === event.data.responderId
               ? {
                   ...responder,
@@ -133,7 +147,7 @@ export const useRescueStore = create<RescueState>((set) => ({
                 }
               : responder
           );
-          const aedCarrier =
+          const aedCarrier: ResponderSummary | null =
             state.aedCarrier?.id === event.data.responderId
               ? {
                   ...state.aedCarrier,
@@ -151,7 +165,7 @@ export const useRescueStore = create<RescueState>((set) => ({
           };
         }
         case "responder_location_update": {
-          const responders = state.responders.map((responder) =>
+          const responders: ResponderSummary[] = state.responders.map((responder) =>
             responder.id === event.data.responderId
               ? {
                   ...responder,
@@ -165,7 +179,7 @@ export const useRescueStore = create<RescueState>((set) => ({
                 }
               : responder
           );
-          const aedCarrier =
+          const aedCarrier: ResponderSummary | null =
             state.aedCarrier?.id === event.data.responderId
               ? {
                   ...state.aedCarrier,
@@ -189,7 +203,7 @@ export const useRescueStore = create<RescueState>((set) => ({
         }
         case "responder_arrived": {
           const arrivedAt = new Date().toISOString();
-          const responders = state.responders.map((responder) =>
+          const responders: ResponderSummary[] = state.responders.map((responder) =>
             responder.id === event.data.responderId
               ? {
                   ...responder,
@@ -199,7 +213,7 @@ export const useRescueStore = create<RescueState>((set) => ({
                 }
               : responder
           );
-          const aedCarrier =
+          const aedCarrier: ResponderSummary | null =
             state.aedCarrier?.id === event.data.responderId
               ? {
                   ...state.aedCarrier,
@@ -218,7 +232,7 @@ export const useRescueStore = create<RescueState>((set) => ({
           };
         }
         case "responder_cancelled": {
-          const responders = state.responders.map((responder) =>
+          const responders: ResponderSummary[] = state.responders.map((responder) =>
             responder.id === event.data.responderId
               ? {
                   ...responder,
@@ -226,7 +240,7 @@ export const useRescueStore = create<RescueState>((set) => ({
                 }
               : responder
           );
-          const aedCarrier =
+          const aedCarrier: ResponderSummary | null =
             state.aedCarrier?.id === event.data.responderId
               ? {
                   ...state.aedCarrier,
@@ -276,6 +290,7 @@ export const useRescueStore = create<RescueState>((set) => ({
         case "dispatch_round_expanded":
           return {
             ...state,
+            dispatchRound: event.data.round,
           };
         case "ping":
           return {
@@ -286,4 +301,3 @@ export const useRescueStore = create<RescueState>((set) => ({
     }),
   reset: () => set({ ...initialState }),
 }));
-
