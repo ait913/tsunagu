@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
   Alert,
   Linking,
+  Platform,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -45,6 +46,19 @@ export default function PermissionScreen({
   };
 
   const handleAllow = async (): Promise<void> => {
+    // Web では expo-notifications の permission API が undetermined のまま動かないため、
+    // 位置情報のみ browser geolocation を試行して、結果に関わらず Home へ遷移する
+    // (Web版はネイティブ機能限定の preview 用と割り切る)
+    if (Platform.OS === "web") {
+      try {
+        await ensurePermissions();
+      } catch {
+        // ignore
+      }
+      finishOnboarding();
+      return;
+    }
+
     await ensurePermissions();
 
     const nextPermissions = useNotificationStore.getState().permissions;
@@ -64,6 +78,12 @@ export default function PermissionScreen({
   };
 
   const handleSkip = (): void => {
+    if (Platform.OS === "web") {
+      // Web では Alert.alert がネイティブ並みに機能しない場合があるため、即遷移
+      setFinderOnlyMode(true);
+      finishOnboarding();
+      return;
+    }
     Alert.alert("確認", "救助者モードは使えませんが OK?", [
       { text: "戻る", style: "cancel" },
       {
