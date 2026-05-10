@@ -4,4 +4,5 @@ ios
 android
 dist
 *.log
-.env*
+.env*.local
+.env.development.*
