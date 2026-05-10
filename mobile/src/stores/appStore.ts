@@ -12,10 +12,13 @@ type AppState = {
   completeOnboarding: () => void;
 };
 
+// EXPO_PUBLIC_DEMO_MODE=true の時はデモ番号 (09039655913) にコール、false で 119
+const DEMO_MODE_DEFAULT = process.env.EXPO_PUBLIC_DEMO_MODE === "true";
+
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      demoMode: false,
+      demoMode: DEMO_MODE_DEFAULT,
       isOnline: true,
       hasOnboarded: false,
       theme: "dark",

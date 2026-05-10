@@ -25,16 +25,11 @@ const REFRESH_PATH = "/auth/refresh";
 
 let refreshPromise: Promise<string | null> | null = null;
 
-function getEnv(name: string): string | undefined {
-  const scope = globalThis as typeof globalThis & {
-    process?: { env?: Record<string, string | undefined> };
-  };
-
-  return scope.process?.env?.[name];
-}
-
 function getBaseUrl(): string {
-  return (getEnv("EXPO_PUBLIC_API_BASE") ?? "").replace(/\/+$/, "");
+  // Expo は `process.env.EXPO_PUBLIC_*` を build時に literal 値で static 置換する。
+  // 動的 (process.env[name]) では置換されないので必ず直接参照する。
+  const url = process.env.EXPO_PUBLIC_API_BASE ?? "";
+  return url.replace(/\/+$/, "");
 }
 
 function buildUrl(

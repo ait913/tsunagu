@@ -5,11 +5,9 @@ type RescueSocketHandler = (event: RescueEvent) => void;
 const RECONNECT_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 16_000, 30_000];
 
 function getWsBase(): string {
-  const scope = globalThis as typeof globalThis & {
-    process?: { env?: Record<string, string | undefined> };
-  };
-
-  return (scope.process?.env?.EXPO_PUBLIC_WS_BASE ?? "").replace(/\/+$/, "");
+  // Expo の static env 置換は `process.env.EXPO_PUBLIC_*` の直接参照のみで動く
+  const url = process.env.EXPO_PUBLIC_WS_BASE ?? "";
+  return url.replace(/\/+$/, "");
 }
 
 export class RescueSocket {
