@@ -1,4 +1,5 @@
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -18,12 +19,28 @@ type AuthState = {
   setFinderOnlyMode: (value: boolean) => void;
 };
 
-const secureStorage = {
-  getItem: async (key: string) => SecureStore.getItemAsync(key),
-  setItem: async (key: string, value: string) =>
-    SecureStore.setItemAsync(key, value),
-  removeItem: async (key: string) => SecureStore.deleteItemAsync(key),
+// expo-secure-store は Web 未対応 (`setValueWithKeyAsync is not a function`)。
+// Web では localStorage、ネイティブでは SecureStore を使う。
+const isWeb = Platform.OS === "web";
+const webStorage = {
+  getItem: async (key: string): Promise<string | null> =>
+    typeof window !== "undefined" ? window.localStorage.getItem(key) : null,
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (typeof window !== "undefined") window.localStorage.setItem(key, value);
+  },
+  removeItem: async (key: string): Promise<void> => {
+    if (typeof window !== "undefined") window.localStorage.removeItem(key);
+  },
 };
+
+const secureStorage = isWeb
+  ? webStorage
+  : {
+      getItem: async (key: string) => SecureStore.getItemAsync(key),
+      setItem: async (key: string, value: string) =>
+        SecureStore.setItemAsync(key, value),
+      removeItem: async (key: string) => SecureStore.deleteItemAsync(key),
+    };
 
 const initialState = {
   user: null,
